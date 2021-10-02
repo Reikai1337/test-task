@@ -6,12 +6,15 @@
   justify-content: center;
   height: fit-content;
   padding: 2rem 0;
+  width: 80%;
+  position: relative;
 }
 .content-table {
+  position: relative;
   border-collapse: collapse;
   margin: 25px 0;
   font-size: 0.9em;
-  min-width: 400px;
+  min-width: 80%;
   border-radius: 5px 5px 0 0;
   overflow: hidden;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -39,4 +42,14 @@
 .content-table tbody tr.active-row {
   font-weight: bold;
   color: #009879
+}
+
+.loader-wrapper {
+  position: absolute;
+  width: 100%;
+  height: fit-content;
+  bottom: 0px;
+  background-color: royalblue;
+  display: flex;
+  justify-content: center;
 }

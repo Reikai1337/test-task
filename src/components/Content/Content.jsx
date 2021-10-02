@@ -1,7 +1,38 @@
 import React, { useEffect, useContext, useState, useReducer } from "react";
 import { API } from "../../API";
 import ResourceContext from "../../context";
+import Loader from "../UI/Loader/index.jsx";
 import "./Content.css";
+
+function getMaxPages(resource) {
+  switch (resource) {
+    case "news":
+      return 10;
+    case "newest":
+      return 12;
+    case "ask":
+      return 2;
+    case "show":
+      return 2;
+    case "jobs":
+      return 1;
+
+    default:
+      break;
+  }
+}
+
+function tableRowCreator(data) {
+  return data.map((item, id) => {
+    return (
+      <tr key={id}>
+        <td>{item.time_ago}</td>
+        <td>{item.title}</td>
+        <td>{item.domain}</td>
+      </tr>
+    );
+  });
+}
 
 function init(state) {
   return { ...state };
@@ -13,8 +44,15 @@ function reducer(state, action) {
       return init(action.payload);
     case "SET_DATA":
       return {
-        data: action.payload,
-        loading: false,
+        ...state,
+        data: [...state.data, ...action.payload],
+        fetching: false,
+        pageToLoad: ++state.pageToLoad,
+      };
+    case "SET_FETCHING":
+      return {
+        ...state,
+        fetching: true,
       };
     default:
       return state;
@@ -22,30 +60,82 @@ function reducer(state, action) {
 }
 
 const Content = () => {
-  const [data, dispatch] = useReducer(
+  const { resource } = useContext(ResourceContext);
+  const [state, dispatch] = useReducer(
     reducer,
-    { data: [], loading: true },
+    {
+      data: [],
+      pageToLoad: 1,
+      fetching: true,
+      currentResource: resource,
+      // maxPage: getMaxPages(resource),
+    },
     init
   );
-  const [page, setPage] = useState(1);
-  const { resource } = useContext(ResourceContext);
+
+  console.log(state, "resource", resource);
   useEffect(() => {
-    async function fetchData(resource, page) {
+    console.log("effect");
+
+    async function fetchData(resource, pageToLoad) {
       try {
-        const response = await API.get(resource, page);
-        // console.log(response);
+        const response = await API.get(resource, pageToLoad);
         dispatch({ type: "SET_DATA", payload: response });
       } catch (e) {
-        // console.log(e);
-        throw e
+        throw e;
       }
     }
-    // fetchData(resource, page);
-  }, [resource]);
-  console.log(data);
+
+
+    console.log(resource, state.currentResource, "in eff");
+    // console.log(state.pageToLoad, state.maxPage);
+
+
+
+    if (
+      state.fetching &&
+      resource === state.currentResource 
+      // state.pageToLoad !== state.maxPage-1
+    ) {
+      fetchData(resource, state.pageToLoad);
+    }
+
+    if (resource !== state.currentResource) {
+      dispatch({
+        type: "RESET",
+        payload: {
+          data: [],
+          pageToLoad: 1,
+          fetching: true,
+          currentResource: resource,
+          // maxPage: getMaxPages(resource),
+        },
+      });
+    }
+
+  }, [resource, state.fetching]);
+
+  useEffect(() => {
+    document.addEventListener("scroll", scrollHandler);
+    return function () {
+      document.removeEventListener("scroll", scrollHandler);
+    };
+  }, []);
+
+  const scrollHandler = (e) => {
+    if (
+      e.target.documentElement.scrollHeight -
+        (e.target.documentElement.scrollTop + window.innerHeight) <
+      100
+    ) {
+      console.log("scroll");
+      dispatch({ type: "SET_FETCHING" });
+    }
+  };
+
   return (
     <div className="content">
-      <table className='content-table'>
+      <table className="content-table">
         <thead>
           <tr>
             <th>Time</th>
@@ -53,24 +143,13 @@ const Content = () => {
             <th>Domain</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>this is time</td>
-            <td>this is title</td>
-            <td>this is domain</td>
-          </tr>
-          <tr className="active-row">
-            <td>this is time</td>
-            <td>this is title</td>
-            <td>this is domain</td>
-          </tr>
-          <tr>
-            <td>this is time</td>
-            <td>this is title</td>
-            <td>this is domain</td>
-          </tr>
-        </tbody>
+        <tbody>{tableRowCreator(state.data)}</tbody>
       </table>
+      {state.fetching ? (
+        <div className="loader-wrapper">
+          <Loader />
+        </div>
+      ) : null}
     </div>
   );
 };
