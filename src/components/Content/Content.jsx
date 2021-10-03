@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, useReducer } from "react";
+import React, { useEffect, useContext, useState, useReducer, useCallback } from "react";
 import { API } from "../../API";
 import ResourceContext from "../../context";
 import Loader from "../UI/Loader/index.jsx";
@@ -67,9 +67,9 @@ const Content = () => {
     },
     init
   );
-  console.log(state, "f", fetching, "cP", currentPage);
+  /* console.log(state, "f", fetching, "cP", currentPage); */
   useEffect(() => {
-    console.log("resource is changed");
+    /* console.log("resource is changed"); */
     dispatch({
       type: "RESET",
       payload: {
@@ -85,7 +85,7 @@ const Content = () => {
   useEffect(() => {
     async function fetchData(resource, currentPage) {
       try {
-        console.log("fetching");
+        /* console.log("fetching"); */
         const response = await API.get(resource, currentPage);
         dispatch({ type: "SET_DATA", payload: response });
         setCurrentPage((prev) => ++prev);
@@ -96,30 +96,31 @@ const Content = () => {
       }
     }
 
-    console.log("currentPage", currentPage, "state.maxPage", state.maxPage);
+    /* console.log("currentPage", currentPage, "state.maxPage", state.maxPage); */
     if (fetching) {
       fetchData(resource, currentPage);
     }
   }, [fetching]);
 
-  useEffect(() => {
-    document.addEventListener("scroll", scrollHandler);
-    return function () {
-      document.removeEventListener("scroll", scrollHandler);
-    };
-  }, []);
-
-  const scrollHandler = (e) => {
+  const scrollHandler = useCallback((e) => {
+    console.log(currentPage);
     if (
       e.target.documentElement.scrollHeight -
         (e.target.documentElement.scrollTop + window.innerHeight) <
         100 &&
       currentPage <= state.maxPage
     ) {
-      console.log(currentPage, "after if");
+      /* console.log(currentPage, "after if"); */
       setFetching(true);
     }
-  };
+  }, [currentPage]);
+
+  useEffect(() => {
+    document.addEventListener("scroll", scrollHandler);
+    return function () {
+      document.removeEventListener("scroll", scrollHandler);
+    };
+  }, [scrollHandler]);
 
   return (
     <div className="content">
