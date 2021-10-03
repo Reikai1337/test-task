@@ -35,7 +35,9 @@ function tableRowCreator(data) {
 }
 
 function init(state) {
-  return { ...state };
+  return {
+    ...state,
+  };
 }
 
 function reducer(state, action) {
@@ -46,13 +48,6 @@ function reducer(state, action) {
       return {
         ...state,
         data: [...state.data, ...action.payload],
-        fetching: false,
-        pageToLoad: ++state.pageToLoad,
-      };
-    case "SET_FETCHING":
-      return {
-        ...state,
-        fetching: true,
       };
     default:
       return state;
@@ -61,59 +56,51 @@ function reducer(state, action) {
 
 const Content = () => {
   const { resource } = useContext(ResourceContext);
+  const [fetching, setFetching] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [state, dispatch] = useReducer(
     reducer,
     {
       data: [],
-      pageToLoad: 1,
-      fetching: true,
       currentResource: resource,
-      // maxPage: getMaxPages(resource),
+      maxPage: getMaxPages(resource),
     },
     init
   );
-
-  console.log(state, "resource", resource);
+  console.log(state, "f", fetching, "cP", currentPage);
   useEffect(() => {
-    console.log("effect");
+    console.log("resource is changed");
+    dispatch({
+      type: "RESET",
+      payload: {
+        data: [],
+        currentResource: resource,
+        maxPage: getMaxPages(resource),
+      },
+    });
+    setCurrentPage(1);
+    setFetching(true);
+  }, [resource]);
 
-    async function fetchData(resource, pageToLoad) {
+  useEffect(() => {
+    async function fetchData(resource, currentPage) {
       try {
-        const response = await API.get(resource, pageToLoad);
+        console.log("fetching");
+        const response = await API.get(resource, currentPage);
         dispatch({ type: "SET_DATA", payload: response });
+        setCurrentPage((prev) => ++prev);
       } catch (e) {
         throw e;
+      } finally {
+        setFetching(false);
       }
     }
 
-
-    console.log(resource, state.currentResource, "in eff");
-    // console.log(state.pageToLoad, state.maxPage);
-
-
-
-    if (
-      state.fetching &&
-      resource === state.currentResource 
-      // state.pageToLoad !== state.maxPage-1
-    ) {
-      fetchData(resource, state.pageToLoad);
+    console.log("currentPage", currentPage, "state.maxPage", state.maxPage);
+    if (fetching) {
+      fetchData(resource, currentPage);
     }
-
-    if (resource !== state.currentResource) {
-      dispatch({
-        type: "RESET",
-        payload: {
-          data: [],
-          pageToLoad: 1,
-          fetching: true,
-          currentResource: resource,
-          // maxPage: getMaxPages(resource),
-        },
-      });
-    }
-
-  }, [resource, state.fetching]);
+  }, [fetching]);
 
   useEffect(() => {
     document.addEventListener("scroll", scrollHandler);
@@ -126,10 +113,11 @@ const Content = () => {
     if (
       e.target.documentElement.scrollHeight -
         (e.target.documentElement.scrollTop + window.innerHeight) <
-      100
+        100 &&
+      currentPage <= state.maxPage
     ) {
-      console.log("scroll");
-      dispatch({ type: "SET_FETCHING" });
+      console.log(currentPage, "after if");
+      setFetching(true);
     }
   };
 
@@ -145,7 +133,7 @@ const Content = () => {
         </thead>
         <tbody>{tableRowCreator(state.data)}</tbody>
       </table>
-      {state.fetching ? (
+      {fetching ? (
         <div className="loader-wrapper">
           <Loader />
         </div>
