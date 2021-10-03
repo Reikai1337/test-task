@@ -67,9 +67,7 @@ const Content = () => {
     },
     init
   );
-  /* console.log(state, "f", fetching, "cP", currentPage); */
   useEffect(() => {
-    /* console.log("resource is changed"); */
     dispatch({
       type: "RESET",
       payload: {
@@ -96,7 +94,6 @@ const Content = () => {
       }
     }
 
-    /* console.log("currentPage", currentPage, "state.maxPage", state.maxPage); */
     if (fetching) {
       fetchData(resource, currentPage);
     }
@@ -110,7 +107,6 @@ const Content = () => {
         100 &&
       currentPage <= state.maxPage
     ) {
-      /* console.log(currentPage, "after if"); */
       setFetching(true);
     }
   }, [currentPage]);
