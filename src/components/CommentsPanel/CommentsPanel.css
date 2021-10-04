@@ -8,9 +8,29 @@
   margin: 57px 0;
   border-radius: 0.5rem;
   padding: 1rem;
+  box-sizing: border-box;
 }
 .close-comments {
+  z-index: 30;
   position: absolute;
   top: 0;
   right: 0;
+}
+.load-more-comments {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 2rem;
+  background-color: #009879;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0px;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+.load-more-comments:hover {
+  background-color: darkslateblue;
+  transition: 0.5s;
 }

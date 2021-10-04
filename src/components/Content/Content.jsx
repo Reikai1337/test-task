@@ -59,10 +59,6 @@ const Content = () => {
   const [sortTimeType, setSortTimeType] = useState("new");
   const [sortTitleType, setSortTitleType] = useState("new");
   const [sortDomainType, setSortDomainType] = useState("new");
-  // const [comments, setComments] = useState({
-  //   isOpen: false,
-  //   id: null
-  // });
   const [state, dispatch] = useReducer(
     reducer,
     {
@@ -76,7 +72,6 @@ const Content = () => {
     },
     init
   );
-  console.log(state.comments, "com");
   const WINDOW_HEIGHT = window.innerHeight;
 
   useEffect(() => {
@@ -102,7 +97,6 @@ const Content = () => {
     try {
       const response = await API.get(resource, currentPage);
       dispatch(setData(response));
-      console.log(response);
       setCurrentPage((prev) => ++prev);
     } catch (e) {
       throw e;
