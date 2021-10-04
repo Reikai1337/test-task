@@ -6,7 +6,11 @@ import { closeCommends } from "../Content/reducer";
 import Loader from "../UI/Loader/index.jsx";
 import { API } from "../../API";
 
-function getComments(comments) {
+function commentGetter(count, comments) {
+  return comments.splice(0, count);
+}
+
+function getJSXComments(comments) {
   if (comments.length > 0) {
     return comments.map((comment, id) => {
       return (
@@ -26,20 +30,31 @@ function getComments(comments) {
 
 const CommentsPanel = ({ id, dispatch }) => {
   const [fetching, setFetching] = useState(true);
-  const [comments, setComments] = useState({});
-  const [showedComments, setShowedComments] = useState([]);
-  
+  const [comments, setComments] = useState({
+    commentsCount: null,
+    comments: [],
+  });
+  const [showedComments, setShowedComments] = useState(0);
+  const [loadCount, setLoadCount] = useState(0);
+  // 120 118
   console.log(comments);
-  
+  console.log(showedComments, "showedComments");
+  console.log(loadCount, "loadCount");
+
   useEffect(() => {
     async function fetchComments(resource, id) {
       try {
         const response = await API.get(resource, id);
+        console.log(response);
         setComments({
           commentsCount: response.comments.length,
           comments: [...response.comments],
         });
-        setShowedComments(prev=>prev.concat())
+        setLoadCount(
+          response.comments.length === 0
+            ? 0
+            : Math.ceil((response.comments.length / 100) * 10)
+        );
       } catch (e) {
         throw e;
       } finally {
@@ -48,11 +63,29 @@ const CommentsPanel = ({ id, dispatch }) => {
     }
     fetchComments("item", id);
   }, []);
-  console.log(comments);
+  useEffect(() => {
+    setShowedComments(loadCount);
+  }, [loadCount]);
+  const showComments = () => {
+    if (
+      showedComments + loadCount <= comments.comments.length &&
+      showedComments !== comments.comments.length
+    ) {
+      setShowedComments((prev) => prev + loadCount);
+    } else {
+      setShowedComments(comments.comments.length);
+    }
+  };
   return (
     <div className="comments-panel">
-      {fetching ? <Loader /> : getComments(comments.comments)}
-      <div className="load-more-comments">Load more</div>
+      {fetching ? (
+        <Loader />
+      ) : (
+        getJSXComments(commentGetter(showedComments, [...comments.comments]))
+      )}
+      <div onClick={showComments} className="load-more-comments">
+        Load more
+      </div>
 
       <div className="close-comments">
         <Button onClick={() => dispatch(closeCommends())} type="success">
