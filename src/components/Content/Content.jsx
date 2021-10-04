@@ -1,8 +1,10 @@
 import React, { useEffect, useContext, useState, useReducer, useCallback } from "react";
 import { API } from "../../API";
-import ResourceContext from "../../context";
+import ResourceContext from "../../context.js";
 import Loader from "../UI/Loader/index.jsx";
 import "./Content.css";
+import { reducer, setData, reset, init } from './reducer.js'
+import useScroll from '../../hooks/use-scroll.js'
 
 function getMaxPages(resource) {
   switch (resource) {
@@ -34,26 +36,6 @@ function tableRowCreator(data) {
   });
 }
 
-function init(state) {
-  return {
-    ...state,
-  };
-}
-
-function reducer(state, action) {
-  switch (action.type) {
-    case "RESET":
-      return init(action.payload);
-    case "SET_DATA":
-      return {
-        ...state,
-        data: [...state.data, ...action.payload],
-      };
-    default:
-      return state;
-  }
-}
-
 const Content = () => {
   const { resource } = useContext(ResourceContext);
   const [fetching, setFetching] = useState(true);
@@ -67,43 +49,41 @@ const Content = () => {
     },
     init
   );
+
+  const WINDOW_HEIGHT = window.innerHeight;
+
   useEffect(() => {
-    dispatch({
-      type: "RESET",
-      payload: {
+    dispatch(reset({
         data: [],
         currentResource: resource,
         maxPage: getMaxPages(resource),
-      },
-    });
+    }));
     setCurrentPage(1);
     setFetching(true);
   }, [resource]);
 
-  useEffect(() => {
-    async function fetchData(resource, currentPage) {
+  async function fetchData(resource, currentPage) {
       try {
-        /* console.log("fetching"); */
         const response = await API.get(resource, currentPage);
-        dispatch({ type: "SET_DATA", payload: response });
+        dispatch(setData(response));
         setCurrentPage((prev) => ++prev);
       } catch (e) {
         throw e;
       } finally {
         setFetching(false);
-      }
     }
+  }
 
+  useEffect(() => {
     if (fetching) {
       fetchData(resource, currentPage);
     }
   }, [fetching]);
 
   const scrollHandler = useCallback((e) => {
-    console.log(currentPage);
     if (
       e.target.documentElement.scrollHeight -
-        (e.target.documentElement.scrollTop + window.innerHeight) <
+        (e.target.documentElement.scrollTop + WINDOW_HEIGHT) <
         100 &&
       currentPage <= state.maxPage
     ) {
@@ -111,12 +91,7 @@ const Content = () => {
     }
   }, [currentPage]);
 
-  useEffect(() => {
-    document.addEventListener("scroll", scrollHandler);
-    return function () {
-      document.removeEventListener("scroll", scrollHandler);
-    };
-  }, [scrollHandler]);
+  useScroll(scrollHandler);
 
   return (
     <div className="content">
@@ -130,11 +105,11 @@ const Content = () => {
         </thead>
         <tbody>{tableRowCreator(state.data)}</tbody>
       </table>
-      {fetching ? (
+      {fetching && (
         <div className="loader-wrapper">
           <Loader />
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

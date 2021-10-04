@@ -27,7 +27,6 @@ const Header = () => {
         return (
           <Button
             type='primary'
-            disabled={false}
             onClick={() => setResource(link.title.toLocaleLowerCase())}
             key={id}
           >
