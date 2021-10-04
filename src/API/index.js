@@ -5,4 +5,5 @@ export const API = {
       res.json().then((data) => data)
     );
   },
+  
 };

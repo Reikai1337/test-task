@@ -1,10 +1,26 @@
-import React, { useEffect, useContext, useState, useReducer, useCallback } from "react";
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useReducer,
+  useCallback,
+} from "react";
 import { API } from "../../API";
 import ResourceContext from "../../context.js";
 import Loader from "../UI/Loader/index.jsx";
 import "./Content.css";
-import { reducer, setData, reset, init } from './reducer.js'
-import useScroll from '../../hooks/use-scroll.js'
+import {
+  reducer,
+  setData,
+  reset,
+  init,
+  sortByTime,
+  sortByTitle,
+  sortByDomain,
+  showComments,
+} from "./reducer.js";
+import useScroll from "../../hooks/use-scroll.js";
+import CommentsPanel from "../CommentsPanel/CommentsPanel.jsx";
 
 function getMaxPages(resource) {
   switch (resource) {
@@ -24,10 +40,10 @@ function getMaxPages(resource) {
   }
 }
 
-function tableRowCreator(data) {
+function tableRowCreator(data, dispatch) {
   return data.map((item, id) => {
     return (
-      <tr key={id}>
+      <tr onClick={() => dispatch(showComments(item.id))} key={id}>
         <td>{item.time_ago}</td>
         <td>{item.title}</td>
         <td>{item.domain}</td>
@@ -40,37 +56,58 @@ const Content = () => {
   const { resource } = useContext(ResourceContext);
   const [fetching, setFetching] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortTimeType, setSortTimeType] = useState("new");
+  const [sortTitleType, setSortTitleType] = useState("new");
+  const [sortDomainType, setSortDomainType] = useState("new");
+  // const [comments, setComments] = useState({
+  //   isOpen: false,
+  //   id: null
+  // });
   const [state, dispatch] = useReducer(
     reducer,
     {
       data: [],
       currentResource: resource,
       maxPage: getMaxPages(resource),
+      comments: {
+        id: null,
+        isOpen: false,
+      },
     },
     init
   );
-
+  console.log(state.comments, "com");
   const WINDOW_HEIGHT = window.innerHeight;
 
   useEffect(() => {
-    dispatch(reset({
+    dispatch(
+      reset({
         data: [],
         currentResource: resource,
         maxPage: getMaxPages(resource),
-    }));
+        comments: {
+          id: null,
+          isOpen: false,
+        },
+      })
+    );
     setCurrentPage(1);
+    setSortTimeType("new");
+    setSortTitleType("new");
+    setSortDomainType("new");
     setFetching(true);
   }, [resource]);
 
   async function fetchData(resource, currentPage) {
-      try {
-        const response = await API.get(resource, currentPage);
-        dispatch(setData(response));
-        setCurrentPage((prev) => ++prev);
-      } catch (e) {
-        throw e;
-      } finally {
-        setFetching(false);
+    try {
+      const response = await API.get(resource, currentPage);
+      dispatch(setData(response));
+      console.log(response);
+      setCurrentPage((prev) => ++prev);
+    } catch (e) {
+      throw e;
+    } finally {
+      setFetching(false);
     }
   }
 
@@ -80,16 +117,19 @@ const Content = () => {
     }
   }, [fetching]);
 
-  const scrollHandler = useCallback((e) => {
-    if (
-      e.target.documentElement.scrollHeight -
-        (e.target.documentElement.scrollTop + WINDOW_HEIGHT) <
-        100 &&
-      currentPage <= state.maxPage
-    ) {
-      setFetching(true);
-    }
-  }, [currentPage]);
+  const scrollHandler = useCallback(
+    (e) => {
+      if (
+        e.target.documentElement.scrollHeight -
+          (e.target.documentElement.scrollTop + WINDOW_HEIGHT) <
+          100 &&
+        currentPage <= state.maxPage
+      ) {
+        setFetching(true);
+      }
+    },
+    [currentPage]
+  );
 
   useScroll(scrollHandler);
 
@@ -98,18 +138,52 @@ const Content = () => {
       <table className="content-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Title</th>
-            <th>Domain</th>
+            <th
+              onClick={() => {
+                dispatch(sortByTime(sortTimeType));
+                if (sortTimeType === "new") {
+                  setSortTimeType("latest");
+                } else {
+                  setSortTimeType("new");
+                }
+              }}
+            >
+              Time
+            </th>
+            <th
+              onClick={() => {
+                dispatch(sortByTitle(sortTitleType));
+                if (sortTitleType === "new") {
+                  setSortTitleType("latest");
+                } else {
+                  setSortTitleType("new");
+                }
+              }}
+            >
+              Title
+            </th>
+            <th
+              onClick={() => {
+                dispatch(sortByDomain(sortDomainType));
+                if (sortDomainType === "new") {
+                  setSortDomainType("latest");
+                } else {
+                  setSortDomainType("new");
+                }
+              }}
+            >
+              Domain
+            </th>
           </tr>
         </thead>
-        <tbody>{tableRowCreator(state.data)}</tbody>
+        <tbody>{tableRowCreator(state.data, dispatch)}</tbody>
       </table>
       {fetching && (
         <div className="loader-wrapper">
           <Loader />
         </div>
       )}
+      {state.comments.isOpen ? <CommentsPanel dispatch={dispatch} id={state.comments.id}/> : null}
     </div>
   );
 };

@@ -24,13 +24,19 @@
  color: #fff;
  text-align: left;
  font-weight: bold;
+ cursor: pointer;
 }
 
 .content-table th, .content-table td {
   padding: 12px 15px;
 }
+.content-table th:hover{
+  background-color: darkslateblue;
+  transition: 0.5s;
+}
 
 .content-table tbody tr {
+  cursor: pointer;
   border-bottom: 1px solid #ddd;
 }
 .content-table tbody tr:nth-of-type(even) {
@@ -39,8 +45,8 @@
 .content-table tbody tr:last-of-type {
  border-bottom: 1px solid #009879;
 }
-.content-table tbody tr.active-row {
-  font-weight: bold;
+.content-table tbody tr:hover {
+  /* font-weight: bold; */
   color: #009879
 }
 
