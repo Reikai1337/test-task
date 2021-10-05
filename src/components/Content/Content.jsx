@@ -40,10 +40,15 @@ function getMaxPages(resource) {
   }
 }
 
-function tableRowCreator(data, dispatch) {
+function tableRowCreator(data, dispatch, isOpen) {
   return data.map((item, id) => {
     return (
-      <tr onClick={() => dispatch(showComments(item.id))} key={id}>
+      <tr
+        onClick={() => {
+          if (!isOpen) dispatch(showComments(item.id));
+        }}
+        key={id}
+      >
         <td>{item.time_ago}</td>
         <td>{item.title}</td>
         <td>{item.domain}</td>
@@ -170,14 +175,18 @@ const Content = () => {
             </th>
           </tr>
         </thead>
-        <tbody>{tableRowCreator(state.data, dispatch)}</tbody>
+        <tbody>
+          {tableRowCreator(state.data, dispatch, state.comments.isOpen)}
+        </tbody>
       </table>
       {fetching && (
         <div className="loader-wrapper">
           <Loader />
         </div>
       )}
-      {state.comments.isOpen ? <CommentsPanel dispatch={dispatch} id={state.comments.id}/> : null}
+      {state.comments.isOpen ? (
+        <CommentsPanel dispatch={dispatch} id={state.comments.id} />
+      ) : null}
     </div>
   );
 };

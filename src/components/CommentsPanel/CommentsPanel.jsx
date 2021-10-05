@@ -10,16 +10,18 @@ function commentGetter(count, comments) {
   return comments.splice(0, count);
 }
 
-function getJSXComments(comments) {
+export function getJSXComments(comments) {
   if (comments.length > 0) {
     return comments.map((comment, id) => {
       return (
         <Comment
+          comments={comment.comments}
           key={id}
           name={comment.user}
           time={comment.time_ago}
           content={comment.content}
           replays={comment.comments.length}
+          level={comment.level}
         />
       );
     });
@@ -36,7 +38,6 @@ const CommentsPanel = ({ id, dispatch }) => {
   });
   const [showedComments, setShowedComments] = useState(0);
   const [loadCount, setLoadCount] = useState(0);
-  // 120 118
   console.log(comments);
   console.log(showedComments, "showedComments");
   console.log(loadCount, "loadCount");
@@ -63,9 +64,11 @@ const CommentsPanel = ({ id, dispatch }) => {
     }
     fetchComments("item", id);
   }, []);
+
   useEffect(() => {
     setShowedComments(loadCount);
   }, [loadCount]);
+
   const showComments = () => {
     if (
       showedComments + loadCount <= comments.comments.length &&
@@ -84,7 +87,9 @@ const CommentsPanel = ({ id, dispatch }) => {
         getJSXComments(commentGetter(showedComments, [...comments.comments]))
       )}
       <div onClick={showComments} className="load-more-comments">
-        Load more
+        {showedComments === comments.commentsCount
+          ? "No more comments"
+          : `Load ${loadCount} more comments`}
       </div>
 
       <div className="close-comments">
