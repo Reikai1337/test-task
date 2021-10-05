@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import "./Header.css";
 import Button from "../UI/Button/Button.jsx";
 import ResourceContext from "../../context";
-const Header = () => {
+const Header = ({ isMobile }) => {
   const { resource, setResource } = useContext(ResourceContext);
   const links = [
     {
@@ -21,12 +21,14 @@ const Header = () => {
       title: "Jobs",
     },
   ];
+
   return (
     <div className="header">
       {links.map((link, id) => {
         return (
           <Button
-            type='primary'
+            isMobile={isMobile}
+            type="primary"
             onClick={() => setResource(link.title.toLocaleLowerCase())}
             key={id}
           >

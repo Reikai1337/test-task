@@ -1,0 +1,71 @@
+.content {
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: fit-content;
+  padding: 1rem 0;
+  width: 100%;
+  position: relative;
+}
+.content-table {
+  position: relative;
+  border-collapse: collapse;
+  margin: 5px 0;
+  font-size: 0.9em;
+  width: 100%;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.content-table thead tr {
+  background-color: #009879;
+  color: #fff;
+  text-align: left;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.content-table th,
+.content-table td {
+  padding: 12px 15px;
+}
+
+.valid-row td {
+  -webkit-line-clamp: 2; /* Число отображаемых строк */
+  display: -webkit-box; /* Включаем флексбоксы */
+  -webkit-box-orient: vertical; /* Вертикальная ориентация */
+  overflow: hidden;
+}
+
+.content-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+.content-table tbody tr:last-of-type {
+  border-bottom: 1px solid #009879;
+}
+.content-table tbody tr:hover {
+  /* font-weight: bold; */
+  color: #009879;
+}
+
+.loader-wrapper {
+  position: absolute;
+  width: 100%;
+  height: fit-content;
+  bottom: 0px;
+  background-color: royalblue;
+  display: flex;
+  justify-content: center;
+}
+
+.sort-button-wrapper {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+}
+.sort-button {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+}
